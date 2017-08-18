@@ -149,8 +149,9 @@ public class Main {
                 String paths = "images/"+path.toString();
                 File full = new File(paths);
                 String rel = full.getCanonicalPath().replace(full.getName(),"");
-                File f =  new File(rel + identifier);
+                File f =  new File(rel);
                 f.mkdirs();
+                f =  new File(rel + identifier);
                 System.out.println(rel+identifier);
                 // Note: this closes the source as well
                 FileUtils.copyInputStreamToFile(temp, f);
