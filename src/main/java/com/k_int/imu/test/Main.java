@@ -4,11 +4,11 @@ import com.kesoftware.imu.*;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * Created by michael Sagar - KINT on 16/08/2017.
@@ -23,6 +23,8 @@ public class Main {
     // result set size
     final static int resultSetSize = 10;
 
+    private static final File errorsFile = new File("Errors.txt");
+    private static final File processedFile = new File("processedIRN.txt");
 
     public static void main(String[] args) {
 
@@ -40,12 +42,8 @@ public class Main {
         Session session = null;
         try {
             //creating logfiles
-            File f = new File("Errors.txt");
-            if(!f.exists())
-                new FileOutputStream(f).close();
-            f = new File("processedIRN.txt");
-            if(!f.exists())
-                new FileOutputStream(f).close();
+        	FileUtils.writeStringToFile(errorsFile, "", StandardCharsets.UTF_8, false);
+        	FileUtils.writeStringToFile(processedFile, "", StandardCharsets.UTF_8, false);
 
             // initialising the session
             session = new Session(ip, port);
@@ -120,7 +118,7 @@ public class Main {
             String publish = row.getString("AdmPublishWebNoPassword");
             String multimedia = row.getString("Multimedia");
             Path path = Paths.get(multimedia);
-            Files.write(Paths.get("processedIRN.txt"), (irn + " : "+multimedia+"\n").getBytes(), StandardOpenOption.APPEND);
+            FileUtils.write(processedFile, irn + " : "+multimedia+"\n", StandardCharsets.UTF_8, true);
             processResource(row.getMap("resource"), irn, path);
         }
     }
@@ -151,17 +149,14 @@ public class Main {
                 String paths = "images/"+path.toString();
                 File full = new File(paths);
                 String rel = full.getCanonicalPath().replace(full.getName(),"");
-                File f =  new File(rel);
+                File f =  new File(rel + identifier);
                 f.mkdirs();
                 System.out.println(rel+identifier);
-                FileOutputStream copy = new FileOutputStream(rel+identifier);
-                byte[] buffer = new byte[16096];
-                while (temp.read(buffer) > 0)
-                    copy.write(buffer);
-                 copy.close();
+                // Note: this closes the source as well
+                FileUtils.copyInputStreamToFile(temp, f);
             } catch (Exception e) {
                 try {
-                    Files.write(Paths.get("Errors.txt"), (irn + " : error creating media " + e.getMessage() + "\n").getBytes(), StandardOpenOption.APPEND);
+                    FileUtils.write(errorsFile, irn + " : error creating media " + e.getMessage() + "\n", StandardCharsets.UTF_8, true);
                     e.printStackTrace();
                 } catch(Exception ee){
                     ee.printStackTrace();
@@ -169,9 +164,7 @@ public class Main {
             }
         } else {
             System.out.println("resource is null");
-            Files.write(Paths.get("Errors.txt"), (irn + " : resource was null " + "\n").getBytes(), StandardOpenOption.APPEND);
-
-
+            FileUtils.write(errorsFile, irn + " : resource was null " + "\n", StandardCharsets.UTF_8, true);
         }
     }
 

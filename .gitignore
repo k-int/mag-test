@@ -1,1 +1,7 @@
-*.iml
+.classpath
+.iml
+.ignore
+.project
+.settings
+target
+
