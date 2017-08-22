@@ -63,15 +63,21 @@ public class Main {
              * This gets the results paginated 0-1000. Using "start" states that this is the start of the
              * results, "current" means use the current results but get the next n abount of records
              */
-                ModuleFetchResult results;
-                if(count==0L)
-                    results = module.fetch("start", 0, resultSetSize, fetchFields());
-                else
-                    results = module.fetch("current", 0, resultSetSize, fetchFields());
-                // gets the results from the result object returned
-                Map[] rows = results.getRows();
-                iterateResultSet(rows);
-                count = count + resultSetSize;
+                try {
+                    ModuleFetchResult results;
+                    if (count == 0L)
+                        results = module.fetch("start", 0, resultSetSize, fetchFields());
+                    else
+                        results = module.fetch("current", 0, resultSetSize, fetchFields());
+                    // gets the results from the result object returned
+                    Map[] rows = results.getRows();
+                    iterateResultSet(rows);
+                    count = count + resultSetSize;
+                }
+                catch(Exception e){
+                    FileUtils.write(errorsFile, "Error obtaining the result set : " + e.toString() + "\n", StandardCharsets.UTF_8, true);
+
+                }
             }
 
         }
