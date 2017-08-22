@@ -4,6 +4,7 @@ import com.kesoftware.imu.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -114,12 +115,28 @@ public class Main {
      */
     private static void iterateResultSet(Map[] resultSet) throws Exception{
         for(Map row : resultSet){
-            String irn = row.getString("irn");
-            String publish = row.getString("AdmPublishWebNoPassword");
-            String multimedia = row.getString("Multimedia");
-            Path path = Paths.get(multimedia);
-            FileUtils.write(processedFile, irn + " : "+multimedia+"\n", StandardCharsets.UTF_8, true);
-            processResource(row.getMap("resource"), irn, path);
+                String irn = row.getString("irn");
+                String resource = null;
+            try{
+                String publish = row.getString("AdmPublishWebNoPassword");
+                String multimedia = row.getString("Multimedia");
+                Path path = Paths.get(multimedia);
+                FileUtils.write(processedFile, irn + " : " + multimedia + "\n", StandardCharsets.UTF_8, true);
+                processResource(row.getMap("resource"), irn, path);
+            }
+            catch(Exception e){
+                try {
+                    if (row.get("resource") == null)
+                        FileUtils.write(errorsFile, irn + " : error creating media, resource is null " + e.toString() + "\n", StandardCharsets.UTF_8, true);
+                    else
+                        FileUtils.write(errorsFile, irn + " : error creating media " + e.toString() + "\n", StandardCharsets.UTF_8, true);
+                    }
+                catch (Exception ee){
+                    ee.printStackTrace();
+                    throw ee;
+                }
+                e.printStackTrace();
+            }
         }
     }
 
@@ -191,5 +208,11 @@ public class Main {
                 };
     }
 
+
+//    private static String exceptionToString(Exception e){
+//        StringWriter sw = new StringWriter();
+//        e.printStackTrace(new PrintWriter(sw));
+//        String exceptionAsString = sw.toString();
+//    }
 
 }
