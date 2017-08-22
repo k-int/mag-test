@@ -209,10 +209,4 @@ public class Main {
     }
 
 
-//    private static String exceptionToString(Exception e){
-//        StringWriter sw = new StringWriter();
-//        e.printStackTrace(new PrintWriter(sw));
-//        String exceptionAsString = sw.toString();
-//    }
-
 }
